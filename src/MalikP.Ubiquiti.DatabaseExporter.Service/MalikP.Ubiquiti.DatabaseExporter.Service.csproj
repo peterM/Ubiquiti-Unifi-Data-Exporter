@@ -1,0 +1,118 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{67FD1A88-5E14-4166-84AA-8BF00FCE2295}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>MalikP.Ubiquiti.DatabaseExporter.Service</RootNamespace>
+    <AssemblyName>MalikP.Ubiquiti.DatabaseExporter.Service</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <LangVersion>7.3</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="MalikP.Cryptography, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MalikP.Cryptography.1.7.6.1\lib\net472\MalikP.Cryptography.dll</HintPath>
+    </Reference>
+    <Reference Include="MalikP.IoC, Version=1.0.6777.25232, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MalikP.IoC.2018.7.22.6\lib\net471\MalikP.IoC.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Configuration.Install" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Management" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.ServiceProcess" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Decisions\ConsoleContinueDecision.cs" />
+    <Compile Include="Exporters\ISpecificUnifiExporter.cs" />
+    <Compile Include="Exporters\UnifiToSqlDatabaseExporter.cs" />
+    <Compile Include="Exporters\UnifiToFileSystemExporter.cs" />
+    <Compile Include="Loggers\ConsoleLogger.cs" />
+    <Compile Include="Loggers\EventLogLogger.cs" />
+    <Compile Include="Schedulers\ConsoleScheduler.cs" />
+    <Compile Include="Exporters\ServiceMainExporter.cs" />
+    <Compile Include="Decisions\IContinueDecision.cs" />
+    <Compile Include="Exporters\IServiceExporter.cs" />
+    <Compile Include="Schedulers\IExportScheduler.cs" />
+    <Compile Include="Decisions\ServiceContinueDecision.cs" />
+    <Compile Include="Schedulers\ServiceScheduler.cs" />
+    <Compile Include="DatabaseExporterWindowsService.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="DatabaseExporterWindowsService.Designer.cs">
+      <DependentUpon>DatabaseExporterWindowsService.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Loggers\ICustomLogger.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="ProjectInstaller.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="ProjectInstaller.Designer.cs">
+      <DependentUpon>ProjectInstaller.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MalikP.Ubiquiti.DatabaseExporter.Core\MalikP.Ubiquiti.DatabaseExporter.Core.csproj">
+      <Project>{32e22404-a76d-4c3f-8eeb-f4cc80b97a23}</Project>
+      <Name>MalikP.Ubiquiti.DatabaseExporter.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MalikP.Ubiquiti.DatabaseExporter.Data\MalikP.Ubiquiti.DatabaseExporter.Data.csproj">
+      <Project>{086260B2-ECAB-48D5-9C75-FDF219F04F0B}</Project>
+      <Name>MalikP.Ubiquiti.DatabaseExporter.Data</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MalikP.Ubiquiti.DatabaseExporter\MalikP.Ubiquiti.DatabaseExporter.csproj">
+      <Project>{B202FE51-E584-427A-B5E9-3098F79DE93D}</Project>
+      <Name>MalikP.Ubiquiti.DatabaseExporter</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="ProjectInstaller.resx">
+      <DependentUpon>ProjectInstaller.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
