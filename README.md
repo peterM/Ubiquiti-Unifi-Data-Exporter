@@ -67,3 +67,8 @@ Once tool's config is updated get your encrypted passwords:
 
 _Your password should be also automatically copied into clipboard._
  
+### Prepare SQL Database
+If you want to use SQL Server Database to store your data you also have to create database and prepare schema of that database.
+1.) create empty SQL database
+2.) execute script located in project `~\src\MalikP.Ubiquiti.DatabaseExporter.Data\Scripts\InstallScript.sql`
+3.) done
