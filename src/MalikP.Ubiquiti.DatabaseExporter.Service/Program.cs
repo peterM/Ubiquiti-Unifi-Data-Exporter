@@ -87,13 +87,13 @@ namespace MalikP.Ubiquiti.DatabaseExporter.Service
             {
                 _ioc.Register<ISSHTunel, SSHTunel>()
                     .RegistrationBuilder<IExtendedRegistrationBuilder>()
-                    .WithConstructorResolvingStrategy(ConstructorResolveStrategy.Complex);
+                      .WithConstructorResolvingStrategy(ConstructorResolveStrategy.Complex);
             }
 
             _ioc.Register<IMongoDataSource, MongoDatabaseDataSource>()
                 .RegistrationBuilder<IExtendedRegistrationBuilder>()
-                .WithPrimitiveParameter<string>(ConfigurationManager.AppSettings["Mongo-Connection-String"])
-                .WithConstructorResolvingStrategy(ConstructorResolveStrategy.Complex);
+                  .WithPrimitiveParameter<string>(ConfigurationManager.AppSettings["Mongo-Connection-String"])
+                  .WithConstructorResolvingStrategy(ConstructorResolveStrategy.Complex);
 
             _ioc.Register<IServiceExporter, ServiceMainExporter>();
             _ioc.Register<DatabaseExporterWindowsService>();
@@ -117,7 +117,7 @@ namespace MalikP.Ubiquiti.DatabaseExporter.Service
             {
                 _ioc.Register<ISpecificUnifiExporter, UnifiToFileSystemExporter>()
                     .RegistrationBuilder<IExtendedRegistrationBuilder>()
-                    .WithPrimitiveParameter<string>(ConfigurationManager.AppSettings["Backup-Path"]);
+                      .WithPrimitiveParameter<string>(ConfigurationManager.AppSettings["Backup-Path"]);
             }
 
             if (bool.Parse(ConfigurationManager.AppSettings["Export-To-DB"]))
@@ -129,32 +129,41 @@ namespace MalikP.Ubiquiti.DatabaseExporter.Service
 
             _ioc.Register<IDatabaseChecker, RecordCecker>()
                 .RegistrationBuilder<IExtendedRegistrationBuilder>()
-                .WithPrimitiveParameter<string>(connectionString);
+                  .WithPrimitiveParameter<string>(connectionString);
 
             _ioc.Register<IDatabaseWriter, RecordWriter>()
                .RegistrationBuilder<IExtendedRegistrationBuilder>()
-               .WithPrimitiveParameter<string>(connectionString);
+                 .WithPrimitiveParameter<string>(connectionString);
 
-            _ioc.Register<ICertificateIdentifier, CertificateIdentifier>()
-                .RegistrationBuilder<IExtendedRegistrationBuilder>()
-                .WithPrimitiveParameter<string>(ConfigurationManager.AppSettings["Encryption-Certificate-Identifier"]);
+            if (bool.Parse(ConfigurationManager.AppSettings["Use-Encrypted-Psswords"]))
+            {
+                _ioc.Register<ICertificateIdentifier, CertificateIdentifier>()
+                    .RegistrationBuilder<IExtendedRegistrationBuilder>()
+                      .WithPrimitiveParameter<string>(ConfigurationManager.AppSettings["Encryption-Certificate-Identifier"]);
 
-            _ioc.Register<CertificateObtainerSettings>()
-                .RegistrationBuilder<IExtendedRegistrationBuilder>()
-                .WithPrimitiveParameter<StoreName>(StoreName.My)
-                .WithPrimitiveParameter<StoreLocation>(StoreLocation.LocalMachine)
-                .WithPrimitiveParameter<X509FindType>(X509FindType.FindBySerialNumber)
-                .WithConstructorResolvingStrategy(ConstructorResolveStrategy.Complex);
+                _ioc.Register<CertificateObtainerSettings>()
+                    .RegistrationBuilder<IExtendedRegistrationBuilder>()
+                      .WithPrimitiveParameter<StoreName>(StoreName.My)
+                      .WithPrimitiveParameter<StoreLocation>(StoreLocation.LocalMachine)
+                      .WithPrimitiveParameter<X509FindType>(X509FindType.FindBySerialNumber)
+                      .WithConstructorResolvingStrategy(ConstructorResolveStrategy.Complex);
 
-            _ioc.RegisterByConstructor<ICustomCredential>(provider => new EncryptedCredential(ConfigurationManager.AppSettings["Sql-User-Id"],
-                                                                                              ConfigurationManager.AppSettings["Sql-User-Password"],
-                                                                                              provider.Resolve<RsaCertificateEncryptor>()));
+                _ioc.Register<ICertificateObtainer, CertificationStoreExactCertificateObtainer>()
+                    .RegistrationBuilder<IExtendedRegistrationBuilder>()
+                      .WithConstructorResolvingStrategy(ConstructorResolveStrategy.Complex);
 
-            _ioc.Register<ICertificateObtainer, CertificationStoreExactCertificateObtainer>()
-                .RegistrationBuilder<IExtendedRegistrationBuilder>()
-                .WithConstructorResolvingStrategy(ConstructorResolveStrategy.Complex);
+                _ioc.RegisterByConstructor<RsaCertificateEncryptor>(provider => new RsaCertificateEncryptor(provider.Resolve<ICertificateObtainer>(), RSAEncryptionPadding.OaepSHA1));
 
-            _ioc.RegisterByConstructor<RsaCertificateEncryptor>(provider => new RsaCertificateEncryptor(provider.Resolve<ICertificateObtainer>(), RSAEncryptionPadding.OaepSHA1));
+
+                _ioc.RegisterByConstructor<ICustomCredential>(provider => new EncryptedCredential(ConfigurationManager.AppSettings["Sql-User-Id"],
+                                                                                                  ConfigurationManager.AppSettings["Sql-User-Password"],
+                                                                                                  provider.Resolve<RsaCertificateEncryptor>()));
+            }
+            else
+            {
+                _ioc.RegisterByConstructor<ICustomCredential>(provider => new CustomCredential(ConfigurationManager.AppSettings["Sql-User-Id"],
+                                                                                               ConfigurationManager.AppSettings["Sql-User-Password"]));
+            }
 
             _ioc.Register<ICheckerCommandCreatorProvider, CheckerCommandCreatorProvider>();
             _ioc.Register<IWriterCommandCreatorProvider, WriterCommandCreatorProvider>();

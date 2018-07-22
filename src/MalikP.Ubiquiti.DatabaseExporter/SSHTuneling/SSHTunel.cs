@@ -37,9 +37,18 @@ namespace MalikP.Ubiquiti.DatabaseExporter.SSHTuneling
             _passwordEncryptor = passwordEncryptor;
         }
 
+        // in case encrypted mode is disabled
+        public SSHTunel()
+        {
+        }
+
         public SshClient OpenTunel()
         {
-            var password = _passwordEncryptor.Decrypt(ConfigurationManager.AppSettings["SSH-Tunel-Password"]);
+            var encryptedPassword = ConfigurationManager.AppSettings["SSH-Tunel-Password"];
+
+            // in case encrypted mode is disabled
+            var password = _passwordEncryptor?.Decrypt(encryptedPassword) ?? encryptedPassword;
+
             var tunel = new SshClient(ConfigurationManager.AppSettings["SSH-Tunel-Host"],
                                       ConfigurationManager.AppSettings["SSH-Tunel-UserName"],
                                       password);

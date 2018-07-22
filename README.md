@@ -6,6 +6,12 @@ In case you want export statistics or any other data from unifi controller, this
 ### Configuration
 Before you use this exporter you have to change configuration in config (_`MalikP.Ubiquiti.DatabaseExporter.Service.exe.config`_) file.
 
+**Setting defines if your password is encrypted or in plain text**<br />
+`<add key="Use-Encrypted-Psswords" value="true|false"/>`
+
+_In case you will use `false` bellow configs what describe password encryption need to use unencrypted password. Use when you do not have certificate to encrypt password. **Using plaintext passwords create security risk that password can be stolen by unatorized person**. **Using un-encrypted passwords is not recommended !**_<br />
+
+
 **Certificate used to decrypt passwords**<br />
 `<add key="Encryption-Certificate-Identifier" value="" />`
 
