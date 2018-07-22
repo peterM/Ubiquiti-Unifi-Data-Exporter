@@ -1,0 +1,49 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2036
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MalikP.Ubiquiti.DatabaseExporter", "MalikP.Ubiquiti.DatabaseExporter\MalikP.Ubiquiti.DatabaseExporter.csproj", "{B202FE51-E584-427A-B5E9-3098F79DE93D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MalikP.Ubiquiti.DatabaseExporter.Service", "MalikP.Ubiquiti.DatabaseExporter.Service\MalikP.Ubiquiti.DatabaseExporter.Service.csproj", "{67FD1A88-5E14-4166-84AA-8BF00FCE2295}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MalikP.Ubiquiti.DatabaseExporter.Data", "MalikP.Ubiquiti.DatabaseExporter.Data\MalikP.Ubiquiti.DatabaseExporter.Data.csproj", "{086260B2-ECAB-48D5-9C75-FDF219F04F0B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MalikP.Ubiquiti.DatabaseExporter.Core", "MalikP.Ubiquiti.DatabaseExporter.Core\MalikP.Ubiquiti.DatabaseExporter.Core.csproj", "{32E22404-A76D-4C3F-8EEB-F4CC80B97A23}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MalikP.Ubiquiti.DatabaseExporter.EncryptPasswordTool", "MalikP.Ubiquiti.DatabaseExporter.EncryptPasswordTool\MalikP.Ubiquiti.DatabaseExporter.EncryptPasswordTool.csproj", "{9E0B74CC-AD80-481F-9B0E-3A4074FCA079}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B202FE51-E584-427A-B5E9-3098F79DE93D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B202FE51-E584-427A-B5E9-3098F79DE93D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B202FE51-E584-427A-B5E9-3098F79DE93D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B202FE51-E584-427A-B5E9-3098F79DE93D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{67FD1A88-5E14-4166-84AA-8BF00FCE2295}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{67FD1A88-5E14-4166-84AA-8BF00FCE2295}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{67FD1A88-5E14-4166-84AA-8BF00FCE2295}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{67FD1A88-5E14-4166-84AA-8BF00FCE2295}.Release|Any CPU.Build.0 = Release|Any CPU
+		{086260B2-ECAB-48D5-9C75-FDF219F04F0B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{086260B2-ECAB-48D5-9C75-FDF219F04F0B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{086260B2-ECAB-48D5-9C75-FDF219F04F0B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{086260B2-ECAB-48D5-9C75-FDF219F04F0B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{32E22404-A76D-4C3F-8EEB-F4CC80B97A23}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{32E22404-A76D-4C3F-8EEB-F4CC80B97A23}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{32E22404-A76D-4C3F-8EEB-F4CC80B97A23}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{32E22404-A76D-4C3F-8EEB-F4CC80B97A23}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9E0B74CC-AD80-481F-9B0E-3A4074FCA079}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9E0B74CC-AD80-481F-9B0E-3A4074FCA079}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9E0B74CC-AD80-481F-9B0E-3A4074FCA079}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9E0B74CC-AD80-481F-9B0E-3A4074FCA079}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A3D7A32A-247A-4033-8AF4-9FC8CE005A94}
+	EndGlobalSection
+EndGlobal

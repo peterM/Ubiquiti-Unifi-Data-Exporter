@@ -1,0 +1,7 @@
+ public class CommandCreator_CheckId_TOKENIZATION : CommandCreator_CheckId_Ace_stat
+    {
+        public CommandCreator_CheckId_TOKENIZATION(string idToCheck)
+            : base("TOKENIZATION", idToCheck)
+        {
+        }
+    }

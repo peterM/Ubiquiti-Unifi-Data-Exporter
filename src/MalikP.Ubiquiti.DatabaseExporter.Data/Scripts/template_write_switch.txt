@@ -1,0 +1,3 @@
+case "TOKEN-FULLTABLENAME":
+                    result = new CommandCreator_WriteId_TOKENIZATION(id, data);
+                    break;

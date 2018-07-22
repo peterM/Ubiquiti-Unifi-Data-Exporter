@@ -1,0 +1,3 @@
+     case "TOKEN-FULLTABLENAME":
+                    result = new CommandCreator_CheckId_TOKENIZATION(id);
+                    break;
