@@ -35,7 +35,7 @@ using System.Configuration;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace MalikP.Ubiquiti.DatabaseExporter.EncryptPasswordTool
 {
@@ -43,12 +43,22 @@ namespace MalikP.Ubiquiti.DatabaseExporter.EncryptPasswordTool
     {
         private static IIoC _ioc;
 
-        static async Task Main(string[] args)
+        [STAThread]
+        static void Main(string[] args)
         {
             SetupInversionOfControl();
             var encryptor = _ioc.Resolve<RsaCertificateEncryptor>();
 
-            Console.WriteLine(encryptor.Encrypt(args.First()));
+            var encrypted = encryptor.Encrypt(args.First());
+            Clipboard.SetText(encrypted);
+
+            Console.WriteLine(string.Empty);
+            Console.WriteLine(string.Empty);
+            Console.ForegroundColor = ConsoleColor.DarkCyan;
+            Console.WriteLine(encrypted);
+            Console.ResetColor();
+            Console.WriteLine(string.Empty);
+            Console.WriteLine(string.Empty);
         }
 
         private static void SetupInversionOfControl()
