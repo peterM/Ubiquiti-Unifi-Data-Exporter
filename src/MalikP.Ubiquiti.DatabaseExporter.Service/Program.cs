@@ -48,6 +48,7 @@ using MalikP.Ubiquiti.DatabaseExporter.SSHTuneling;
 using MalikP.Ubiquiti.DatabaseExporter.Service.Loggers;
 using MalikP.Ubiquiti.DatabaseExporter.Data.Core.Credentials;
 using System.Threading.Tasks;
+using MalikP.Ubiquiti.DatabaseExporter.Core.Blacklists;
 
 namespace MalikP.Ubiquiti.DatabaseExporter.Service
 {
@@ -169,6 +170,11 @@ namespace MalikP.Ubiquiti.DatabaseExporter.Service
 
             _ioc.Register<ICheckerCommandCreatorProvider, CheckerCommandCreatorProvider>();
             _ioc.Register<IWriterCommandCreatorProvider, WriterCommandCreatorProvider>();
+
+            _ioc.Register<IBlacklistItemParser, BlacklistItemParser>();
+            _ioc.Register<IBlacklist, SimpleTableBlacklist>()
+                .RegistrationBuilder<IExtendedRegistrationBuilder>()
+                  .WithPrimitiveParameter<string>(ConfigurationManager.AppSettings["Blacklisted-Table-Names"]);
         }
     }
 }

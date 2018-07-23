@@ -65,6 +65,11 @@ _In case you will use `false` bellow configs what describe password encryption n
 **Setting defines port forward target port in SSH tunel** (_change is not needed_)<br />
 `<add key="SSH-Forward-Port-To" value="27117" />`
 
+**Setting defines which tables will not be exported**<br />
+`<add key="Blacklisted-Table-Names" value=""/>` <br />
+_Define table names like: `schema.tablename`_<br />
+_Split teble names by `;` like: `schema.tablename1;schema.tablename2schema.tablename3`_
+
 ### How to get encrypted password
 You can use attached tool which will encrypt your `plain text` password. Before you use `MalikP.Ubiquiti.DatabaseExporter.EncryptPasswordTool` update tool's (_`MalikP.Ubiquiti.DatabaseExporter.EncryptPasswordTool.exe.config`_) file.<br />
 

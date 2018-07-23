@@ -24,10 +24,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using MalikP.Ubiquiti.DatabaseExporter.Core.Blacklists;
 using MalikP.Ubiquiti.DatabaseExporter.Data.Core;
 using MalikP.Ubiquiti.DatabaseExporter.Data.Core.Factory;
 using MalikP.Ubiquiti.DatabaseExporter.Datasource;
@@ -38,6 +40,7 @@ namespace MalikP.Ubiquiti.DatabaseExporter.Service.Exporters
 {
     public class UnifiToSqlDatabaseExporter : ISpecificUnifiExporter
     {
+        readonly IBlacklist _blacklist;
         readonly ICustomLogger _customLogger;
         readonly ICheckerCommandCreatorProvider _checkerCommandCreatorProvider;
         readonly IWriterCommandCreatorProvider _writerCommandCreatorProvider;
@@ -48,6 +51,7 @@ namespace MalikP.Ubiquiti.DatabaseExporter.Service.Exporters
         IMongoDataSource _mongoDataSource;
 
         public UnifiToSqlDatabaseExporter(
+            IBlacklist blacklist,
             ICheckerCommandCreatorProvider checkerCommandCreatorProvider,
             IWriterCommandCreatorProvider writerCommandCreatorProvider,
             IDatabaseChecker checker,
@@ -61,6 +65,7 @@ namespace MalikP.Ubiquiti.DatabaseExporter.Service.Exporters
             _writer = writer;
             _customLogger = customLogger;
             _batchSize = batchSize;
+            _blacklist = blacklist;
         }
 
         public void SetUnifiDataSource(IMongoDataSource mongoDataSource)
@@ -70,7 +75,7 @@ namespace MalikP.Ubiquiti.DatabaseExporter.Service.Exporters
 
         public Task ExportAsync(string databaseName, string collectionName, CancellationToken cancellationToken)
         {
-            if (!string.Equals(collectionName, "system.indexes"))
+            if (!_blacklist.IsBlacklisted($"{databaseName}.{collectionName}"))
             {
                 var documents = _mongoDataSource.GetCollectionJsonDocuments(databaseName, collectionName).ToList();
                 var totalCount = documents.Count;
@@ -131,6 +136,10 @@ namespace MalikP.Ubiquiti.DatabaseExporter.Service.Exporters
                     _customLogger.WriteMessage(stringBuilder.ToString());
                     stringBuilder.Clear();
                 }
+            }
+            else
+            {
+                _customLogger.WriteMessage($"SQL: Blacklisted table: [{databaseName}.{collectionName}]", EventLogEntryType.Warning);
             }
 
             return Task.CompletedTask;

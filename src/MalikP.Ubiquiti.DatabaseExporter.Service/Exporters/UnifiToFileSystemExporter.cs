@@ -23,10 +23,12 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using MalikP.Ubiquiti.DatabaseExporter.Core.Blacklists;
 using MalikP.Ubiquiti.DatabaseExporter.Core.Interfaces;
 using MalikP.Ubiquiti.DatabaseExporter.Datasource;
 using MalikP.Ubiquiti.DatabaseExporter.IO;
@@ -36,6 +38,7 @@ namespace MalikP.Ubiquiti.DatabaseExporter.Service.Exporters
 {
     public class UnifiToFileSystemExporter : ISpecificUnifiExporter, IInitializable
     {
+        readonly IBlacklist _blacklist;
         readonly IDirectoryWrapper _directoryWrapper;
         readonly IFileWrapper _fileWrapper;
         readonly ICustomLogger _customLogger;
@@ -46,6 +49,7 @@ namespace MalikP.Ubiquiti.DatabaseExporter.Service.Exporters
         string _dateTimeStamp;
 
         public UnifiToFileSystemExporter(
+            IBlacklist blacklist,
             IDirectoryWrapper directoryWrapperInstance,
             IFileWrapper fileWrapper,
             ICustomLogger customLogger,
@@ -58,17 +62,25 @@ namespace MalikP.Ubiquiti.DatabaseExporter.Service.Exporters
 
             CheckRootPath(directoryWrapperInstance);
             _dateTimeStamp = DateTime.Now.ToString("dd_MM_yyyy_HH-mm-ss");
+            _blacklist = blacklist;
         }
 
         public Task ExportAsync(string databaseName, string collectionName, CancellationToken cancellationToken)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            var jsonDocument = _mongoDataSource.GetCollectionJsonData(databaseName, collectionName);
-            byte[] collectionData = Encoding.UTF8.GetBytes(jsonDocument);
-            string path = CreateCollectionPath(_directoryWrapper, _rootPath, databaseName, _dateTimeStamp);
-            path = GetCollectionFilePath(collectionName, path);
-            _fileWrapper.WriteAllBytes(path, collectionData);
-            _customLogger.WriteMessage($"Collection Name {collectionName} saved to file system");
+            if (!_blacklist.IsBlacklisted($"{databaseName}.{collectionName}"))
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var jsonDocument = _mongoDataSource.GetCollectionJsonData(databaseName, collectionName);
+                byte[] collectionData = Encoding.UTF8.GetBytes(jsonDocument);
+                string path = CreateCollectionPath(_directoryWrapper, _rootPath, databaseName, _dateTimeStamp);
+                path = GetCollectionFilePath(collectionName, path);
+                _fileWrapper.WriteAllBytes(path, collectionData);
+                _customLogger.WriteMessage($"Collection Name {collectionName} saved to file system");
+            }
+            else
+            {
+                _customLogger.WriteMessage($"FS: Blacklisted table: [{databaseName}.{collectionName}]", EventLogEntryType.Warning);
+            }
 
             return Task.CompletedTask;
         }

@@ -1,6 +1,6 @@
 ﻿// Copyright (c) 2018 Peter M.
 // 
-// File: DatabaseWriter.cs 
+// File: IBlacklistItemParser.cs 
 // Company: MalikP.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
@@ -22,33 +22,12 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-using MalikP.Ubiquiti.DatabaseExporter.Data.Core.CommandCreators;
-using MalikP.Ubiquiti.DatabaseExporter.Data.Core.Credentials;
-using System.Linq;
+using System.Collections.Generic;
 
-namespace MalikP.Ubiquiti.DatabaseExporter.Data.Core
+namespace MalikP.Ubiquiti.DatabaseExporter.Core.Blacklists
 {
-    public class DatabaseWriter : AbstractDatabaseExecutor, IDatabaseWriter
+    public interface IBlacklistItemParser
     {
-        public DatabaseWriter(string connectionString, ICustomCredential customCredential)
-            : base(connectionString, customCredential)
-        {
-        }
-
-        public bool Write(Abstract_CommandCreator_WriteId commandCreator)
-        {
-            bool result = false;
-            using (var command = GetCommand(commandCreator))
-            {
-                var commands = commandCreator.Commands;
-                if (commands.Any())
-                {
-                    ExecuteNonQuery(commands, commands.First().Transaction);
-                    result = true;
-                }
-            }
-
-            return result;
-        }
+        IEnumerable<BlacklistItem> ParseItems(string itemsString);
     }
 }

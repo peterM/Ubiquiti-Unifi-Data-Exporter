@@ -42,6 +42,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Blacklists\BlacklistItem.cs" />
+    <Compile Include="Blacklists\BlacklistItemParser.cs" />
+    <Compile Include="Blacklists\IBlacklist.cs" />
+    <Compile Include="Blacklists\IBlacklistItemParser.cs" />
+    <Compile Include="Blacklists\SimpleTableBlacklist.cs" />
     <Compile Include="Extensions\ObjectExtensions.cs" />
     <Compile Include="Interfaces\IInitializable.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

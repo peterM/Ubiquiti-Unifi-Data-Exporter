@@ -1,6 +1,6 @@
 ﻿// Copyright (c) 2018 Peter M.
 // 
-// File: DatabaseWriter.cs 
+// File: SimpleTableBlacklist.cs 
 // Company: MalikP.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
@@ -22,33 +22,27 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-using MalikP.Ubiquiti.DatabaseExporter.Data.Core.CommandCreators;
-using MalikP.Ubiquiti.DatabaseExporter.Data.Core.Credentials;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 
-namespace MalikP.Ubiquiti.DatabaseExporter.Data.Core
+namespace MalikP.Ubiquiti.DatabaseExporter.Core.Blacklists
 {
-    public class DatabaseWriter : AbstractDatabaseExecutor, IDatabaseWriter
+    public class SimpleTableBlacklist : IBlacklist
     {
-        public DatabaseWriter(string connectionString, ICustomCredential customCredential)
-            : base(connectionString, customCredential)
+        IEnumerable<BlacklistItem> _blacklistItems;
+
+        public SimpleTableBlacklist(IBlacklistItemParser blacklistItemParser, string itemsString)
         {
+            _blacklistItems = blacklistItemParser.ParseItems(itemsString);
         }
 
-        public bool Write(Abstract_CommandCreator_WriteId commandCreator)
+        public bool IsBlacklisted(string item)
         {
-            bool result = false;
-            using (var command = GetCommand(commandCreator))
-            {
-                var commands = commandCreator.Commands;
-                if (commands.Any())
-                {
-                    ExecuteNonQuery(commands, commands.First().Transaction);
-                    result = true;
-                }
-            }
-
-            return result;
+            return _blacklistItems.Any(d => string.Equals(d.Name, item, StringComparison.CurrentCultureIgnoreCase))
+                || string.Equals("ace.system.indexes", item, StringComparison.CurrentCultureIgnoreCase)
+                || string.Equals("ace_stat.system.indexes", item, StringComparison.CurrentCultureIgnoreCase)
+                || string.Equals("local.system.indexes", item, StringComparison.CurrentCultureIgnoreCase);
         }
     }
 }
