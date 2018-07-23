@@ -1,6 +1,6 @@
 ﻿// Copyright (c) 2018 Peter M.
 // 
-// File: RecordCecker.cs 
+// File: DatabaseChecker.cs 
 // Company: MalikP.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
@@ -25,23 +25,25 @@
 using MalikP.Ubiquiti.DatabaseExporter.Data.Core.CommandCreators;
 using MalikP.Ubiquiti.DatabaseExporter.Data.Core.Credentials;
 using MalikP.Ubiquiti.DatabaseExporter.Data.Core.Mapables;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace MalikP.Ubiquiti.DatabaseExporter.Data.Core
 {
-    public class RecordCecker : AbstractDatabaseExecutor, IDatabaseChecker
+    public class DatabaseChecker : AbstractDatabaseExecutor, IDatabaseChecker
     {
-        public RecordCecker(string connectionString, ICustomCredential customCredential)
+        public DatabaseChecker(string connectionString, ICustomCredential customCredential)
             : base(connectionString, customCredential)
         {
         }
 
-        public bool Check(AbstractCommandCreator commandCreator)
+        public IEnumerable<MapableString> Check(Abstract_CommandCreator_CheckId commandCreator)
         {
-            bool result = false;
+            IEnumerable<MapableString> result = Enumerable.Empty<MapableString>();
             using (var command = GetCommand(commandCreator))
+            using (var connection = command?.Connection)
             {
-                MapableBool resultObject = ExecuteReaderWithSingleResult<MapableBool>(command);
-                result = resultObject?.Value ?? false;
+                result = ExecuteReaderWithManyResults<MapableString>(command).ToList();
             }
 
             return result;

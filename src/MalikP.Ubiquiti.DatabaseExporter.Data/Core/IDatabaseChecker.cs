@@ -23,11 +23,13 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using MalikP.Ubiquiti.DatabaseExporter.Data.Core.CommandCreators;
+using MalikP.Ubiquiti.DatabaseExporter.Data.Core.Mapables;
+using System.Collections.Generic;
 
 namespace MalikP.Ubiquiti.DatabaseExporter.Data.Core
 {
     public interface IDatabaseChecker
     {
-        bool Check(AbstractCommandCreator commandCreator);
+        IEnumerable<MapableString> Check(Abstract_CommandCreator_CheckId commandCreator);
     }
 }

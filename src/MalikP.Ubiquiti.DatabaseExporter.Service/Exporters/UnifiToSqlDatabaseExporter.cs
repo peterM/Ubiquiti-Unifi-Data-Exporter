@@ -23,14 +23,14 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using System;
-using System.Diagnostics;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MalikP.Ubiquiti.DatabaseExporter.Data.Core;
 using MalikP.Ubiquiti.DatabaseExporter.Data.Core.Factory;
 using MalikP.Ubiquiti.DatabaseExporter.Datasource;
-using MalikP.Ubiquiti.DatabaseExporter.Service.Decisions;
 using MalikP.Ubiquiti.DatabaseExporter.Service.Loggers;
 using Newtonsoft.Json.Linq;
 
@@ -43,6 +43,7 @@ namespace MalikP.Ubiquiti.DatabaseExporter.Service.Exporters
         readonly IWriterCommandCreatorProvider _writerCommandCreatorProvider;
         readonly IDatabaseChecker _checker;
         readonly IDatabaseWriter _writer;
+        readonly int _batchSize;
 
         IMongoDataSource _mongoDataSource;
 
@@ -51,13 +52,15 @@ namespace MalikP.Ubiquiti.DatabaseExporter.Service.Exporters
             IWriterCommandCreatorProvider writerCommandCreatorProvider,
             IDatabaseChecker checker,
             IDatabaseWriter writer,
-            ICustomLogger customLogger)
+            ICustomLogger customLogger,
+            int batchSize)
         {
             _checkerCommandCreatorProvider = checkerCommandCreatorProvider;
             _writerCommandCreatorProvider = writerCommandCreatorProvider;
             _checker = checker;
             _writer = writer;
             _customLogger = customLogger;
+            _batchSize = batchSize;
         }
 
         public void SetUnifiDataSource(IMongoDataSource mongoDataSource)
@@ -69,38 +72,76 @@ namespace MalikP.Ubiquiti.DatabaseExporter.Service.Exporters
         {
             if (!string.Equals(collectionName, "system.indexes"))
             {
-                var documents = _mongoDataSource.GetCollectionJsonDocuments(databaseName, collectionName);
-                var itemNumber = 0;
-                foreach (string jsonDocument in documents)
+                var documents = _mongoDataSource.GetCollectionJsonDocuments(databaseName, collectionName).ToList();
+                var totalCount = documents.Count;
+
+                int logCounter1 = 0;
+                int counter = 0;
+                while ((counter = documents.Count) > 0)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    var count = documents.Count();
-                    itemNumber++;
+                    var documentsToProcess = documents.Take(_batchSize).ToList();
 
-                    string id = GetId(jsonDocument);
-
-                    _customLogger.WriteMessage($"Collection Name: {collectionName} | Check: {itemNumber} / {count}");
-                    var checkCommand = _checkerCommandCreatorProvider.GetCommandCreator(databaseName, collectionName, id);
-                    if (checkCommand != null && !_checker.Check(checkCommand))
+                    Dictionary<string, string> documentDictionary = new Dictionary<string, string>();
+                    StringBuilder stringBuilder = new StringBuilder();
+                    stringBuilder.AppendLine($"Collection Name: {collectionName} | Going to check {documentsToProcess.Count} / {totalCount} these ids:");
+                    foreach (var jsonDocument in documentsToProcess)
                     {
-                        var writeCommand = _writerCommandCreatorProvider.GetCommandCreator(databaseName, collectionName, id, jsonDocument);
-                        if (writeCommand != null)
+                        documents.Remove(jsonDocument);
+                        string id = GetId(jsonDocument);
+
+                        logCounter1++;
+                        stringBuilder.AppendLine($"{id} -> {logCounter1} / {totalCount}");
+                        documentDictionary.Add(id, jsonDocument);
+                    }
+
+                    string concatenatedIds = string.Join(", ", documentDictionary.Keys.Select(d => $"'{d}'"));
+                    var checkCommand = _checkerCommandCreatorProvider.GetCommandCreator(databaseName, collectionName, concatenatedIds);
+                    if (checkCommand != null)
+                    {
+                        var ids = _checker.Check(checkCommand).ToList();
+
+                        AddLines(stringBuilder, 3);
+                        var documentsToProcessPairs = documentDictionary.Where(d => !ids.Any(d2 => string.Equals(d2.Value, d.Key, StringComparison.CurrentCultureIgnoreCase))).Select(d => d).ToList();
+
+                        documentDictionary.Clear();
+                        documentsToProcessPairs.ForEach(d => documentDictionary.Add(d.Key, d.Value));
+                    }
+
+                    stringBuilder.AppendLine("Going to write these ids:");
+                    if (documentDictionary.Any())
+                    {
+                        foreach (var item in documentDictionary)
                         {
-                            _customLogger.WriteMessage($"Collection Name: {collectionName} | Write {itemNumber} / {count}", EventLogEntryType.Warning);
-                            if (_writer.Write(writeCommand))
-                            {
-                                _customLogger.WriteMessage($"Collection Name: {collectionName} | Write {itemNumber} / {count} was written into database.", EventLogEntryType.Warning);
-                            }
-                            else
-                            {
-                                _customLogger.WriteMessage($"Collection Name: {collectionName} | Write {itemNumber} / {count} was NOT written into database.", EventLogEntryType.Error);
-                            }
+                            stringBuilder.AppendLine(item.Key);
+                        }
+
+                        AddLines(stringBuilder, 3);
+                        var writeCommand = _writerCommandCreatorProvider.GetCommandCreator(databaseName, collectionName, documentDictionary);
+                        if (writeCommand != null && _writer.Write(writeCommand))
+                        {
+                            stringBuilder.AppendLine("Ids were written");
+                        }
+                        else
+                        {
+                            stringBuilder.AppendLine("Ids were NOT written");
                         }
                     }
+
+                    _customLogger.WriteMessage(stringBuilder.ToString());
+                    stringBuilder.Clear();
                 }
             }
 
             return Task.CompletedTask;
+        }
+
+        private void AddLines(StringBuilder stringBuilder, int count)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                stringBuilder.AppendLine();
+            }
         }
 
         private string GetId(string jsonDocument)

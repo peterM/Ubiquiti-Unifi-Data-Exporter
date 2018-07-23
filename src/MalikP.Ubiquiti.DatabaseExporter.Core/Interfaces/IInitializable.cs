@@ -1,6 +1,6 @@
 ﻿// Copyright (c) 2018 Peter M.
 // 
-// File: RecordWriter.cs 
+// File: IInitializable.cs 
 // Company: MalikP.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
@@ -22,32 +22,10 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-using MalikP.Ubiquiti.DatabaseExporter.Data.Core.CommandCreators;
-using MalikP.Ubiquiti.DatabaseExporter.Data.Core.Credentials;
-using System;
-
-namespace MalikP.Ubiquiti.DatabaseExporter.Data.Core
+namespace MalikP.Ubiquiti.DatabaseExporter.Core.Interfaces
 {
-    public class RecordWriter : AbstractDatabaseExecutor, IDatabaseWriter
+    public interface IInitializable
     {
-        public RecordWriter(string connectionString, ICustomCredential customCredential)
-            : base(connectionString, customCredential)
-        {
-        }
-
-        public bool Write(AbstractCommandCreator commandCreator)
-        {
-            bool result = false;
-            using (var command = GetCommand(commandCreator))
-            {
-                if (command != null)
-                {
-                    var intResult = ExecuteNonQuery(command);
-                    result = Convert.ToBoolean(intResult);
-                }
-            }
-
-            return result;
-        }
+        IInitializable Initialize<T>(T initializationInstance);
     }
 }

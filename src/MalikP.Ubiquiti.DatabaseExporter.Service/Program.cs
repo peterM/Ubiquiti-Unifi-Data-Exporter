@@ -122,16 +122,18 @@ namespace MalikP.Ubiquiti.DatabaseExporter.Service
 
             if (bool.Parse(ConfigurationManager.AppSettings["Export-To-DB"]))
             {
-                _ioc.Register<ISpecificUnifiExporter, UnifiToSqlDatabaseExporter>();
+                _ioc.Register<ISpecificUnifiExporter, UnifiToSqlDatabaseExporter>()
+                    .RegistrationBuilder<IExtendedRegistrationBuilder>()
+                      .WithPrimitiveParameter<int>(int.Parse(ConfigurationManager.AppSettings["Sql-Batch-Size"]));
             }
 
             var connectionString = ConfigurationManager.AppSettings["Sql-Connection-String"];
 
-            _ioc.Register<IDatabaseChecker, RecordCecker>()
+            _ioc.Register<IDatabaseChecker, DatabaseChecker>()
                 .RegistrationBuilder<IExtendedRegistrationBuilder>()
                   .WithPrimitiveParameter<string>(connectionString);
 
-            _ioc.Register<IDatabaseWriter, RecordWriter>()
+            _ioc.Register<IDatabaseWriter, DatabaseWriter>()
                .RegistrationBuilder<IExtendedRegistrationBuilder>()
                  .WithPrimitiveParameter<string>(connectionString);
 

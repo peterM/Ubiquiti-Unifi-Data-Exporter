@@ -22,6 +22,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 
@@ -29,16 +30,18 @@ namespace MalikP.Ubiquiti.DatabaseExporter.Data.Core.CommandCreators
 {
     public abstract class Abstract_CommandCreator_WriteId : AbstractCommandCreator
     {
-        protected Abstract_CommandCreator_WriteId(string schema, string tableName, string jsonDataId, string jsonData)
+        private readonly Dictionary<string, string> _documentDictionary;
+
+        protected Abstract_CommandCreator_WriteId(string schema, string tableName, Dictionary<string, string> documentDictionary)
         {
             TableName = $"[{schema}].[{tableName}]";
-            JsonDataId = jsonDataId;
-            JsonData = jsonData;
+            _documentDictionary = documentDictionary;
+            Commands = new List<IDbCommand>();
         }
 
         protected string TableName { get; }
-        protected string JsonDataId { get; }
-        protected string JsonData { get; }
+
+        public List<IDbCommand> Commands { get; }
 
         protected override string CreateCommandText()
         {
@@ -51,9 +54,18 @@ namespace MalikP.Ubiquiti.DatabaseExporter.Data.Core.CommandCreators
 
         protected override void SetupCommand(SqlCommand command)
         {
-            command.Parameters.AddWithValue("@jsonData", JsonData);
-            command.Parameters.AddWithValue("@jsonDataId", JsonDataId);
-            command.CommandType = CommandType.Text;
+            var connection = command.Connection;
+            var transaction = connection.BeginTransaction();
+
+            foreach (var item in _documentDictionary)
+            {
+                var newCommand = new SqlCommand(CreateCommandText(), connection);
+                Commands.Add(newCommand);
+                newCommand.Parameters.AddWithValue("@jsonData", item.Value);
+                newCommand.Parameters.AddWithValue("@jsonDataId", item.Key);
+                newCommand.CommandType = CommandType.Text;
+                newCommand.Transaction = transaction;
+            }
         }
     }
 }

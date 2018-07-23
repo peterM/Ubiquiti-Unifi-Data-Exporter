@@ -22,12 +22,14 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+using System.Collections.Generic;
+
 namespace MalikP.Ubiquiti.DatabaseExporter.Data.Core.CommandCreators.Ace
 {
     public class CommandCreator_WriteId_wlangroup : CommandCreator_WriteId_Ace
     {
-        public CommandCreator_WriteId_wlangroup(string jsonDataId, string jsonData)
-            : base("wlangroup", jsonDataId, jsonData)
+        public CommandCreator_WriteId_wlangroup(Dictionary<string, string> documentDictionary)
+            : base("wlangroup", documentDictionary)
         {
         }
     }

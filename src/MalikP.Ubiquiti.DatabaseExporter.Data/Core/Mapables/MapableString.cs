@@ -1,6 +1,6 @@
 ﻿// Copyright (c) 2018 Peter M.
 // 
-// File: CommandCreator_WriteId_event.cs 
+// File: MapableString.cs 
 // Company: MalikP.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
@@ -22,15 +22,29 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-using System.Collections.Generic;
+using System.Data;
 
-namespace MalikP.Ubiquiti.DatabaseExporter.Data.Core.CommandCreators.Ace
+namespace MalikP.Ubiquiti.DatabaseExporter.Data.Core.Mapables
 {
-    public class CommandCreator_WriteId_event : CommandCreator_WriteId_Ace
+    public class MapableString : AbstractMapable
     {
-        public CommandCreator_WriteId_event(Dictionary<string, string> documentDictionary)
-            : base("event", documentDictionary)
+        public string Value { get; private set; }
+
+        public override bool MapFrom(IDataReader reader)
         {
+            var result = base.MapFrom(reader);
+            if (result && reader.FieldCount == 1)
+            {
+                result = true;
+                Value = reader[0].ToString();
+            }
+            else
+            {
+                result = false;
+            }
+
+
+            return result;
         }
     }
 }

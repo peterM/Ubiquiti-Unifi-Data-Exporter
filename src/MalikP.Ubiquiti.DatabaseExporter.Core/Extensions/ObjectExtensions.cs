@@ -1,6 +1,6 @@
 ﻿// Copyright (c) 2018 Peter M.
 // 
-// File: CommandCreator_WriteId_event.cs 
+// File: ObjectExtensions.cs 
 // Company: MalikP.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
@@ -22,15 +22,20 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-using System.Collections.Generic;
+using MalikP.Ubiquiti.DatabaseExporter.Core.Interfaces;
 
-namespace MalikP.Ubiquiti.DatabaseExporter.Data.Core.CommandCreators.Ace
+namespace MalikP.Ubiquiti.DatabaseExporter.Core.Extensions
 {
-    public class CommandCreator_WriteId_event : CommandCreator_WriteId_Ace
+
+    public static class ObjectExtensions
     {
-        public CommandCreator_WriteId_event(Dictionary<string, string> documentDictionary)
-            : base("event", documentDictionary)
+        public static void TryInitialize<T>(this object source, T initializationInstance)
         {
+            var casted = source as IInitializable;
+            if (casted != null)
+            {
+                casted.Initialize<T>(initializationInstance);
+            }
         }
     }
 }

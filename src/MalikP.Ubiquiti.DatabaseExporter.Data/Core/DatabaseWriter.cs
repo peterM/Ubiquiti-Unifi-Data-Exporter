@@ -1,6 +1,6 @@
 ﻿// Copyright (c) 2018 Peter M.
 // 
-// File: SecureStringExtensions.cs 
+// File: RecordWriter.cs 
 // Company: MalikP.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
@@ -22,32 +22,33 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-using System;
-using System.Security;
+using MalikP.Ubiquiti.DatabaseExporter.Data.Core.CommandCreators;
+using MalikP.Ubiquiti.DatabaseExporter.Data.Core.Credentials;
+using System.Linq;
 
-namespace MalikP.Ubiquiti.DatabaseExporter.Core
+namespace MalikP.Ubiquiti.DatabaseExporter.Data.Core
 {
-    public static class SecureStringExtensions
+    public class DatabaseWriter : AbstractDatabaseExecutor, IDatabaseWriter
     {
-        public static String ToNormalString(this SecureString secureStr)
+        public DatabaseWriter(string connectionString, ICustomCredential customCredential)
+            : base(connectionString, customCredential)
         {
-            return new System.Net.NetworkCredential(string.Empty, secureStr).Password;
         }
 
-        public static SecureString ToSecureString(this String plainStr)
+        public bool Write(Abstract_CommandCreator_WriteId commandCreator)
         {
-            var secStr = new SecureString();
-            secStr.Clear();
-
-            if (!string.IsNullOrEmpty(plainStr))
+            bool result = false;
+            using (var command = GetCommand(commandCreator))
             {
-                foreach (char c in plainStr)
+                var commands = commandCreator.Commands;
+                if (commands.Any())
                 {
-                    secStr.AppendChar(c);
+                    ExecuteNonQuery(commands, commands.First().Transaction);
+                    result = true;
                 }
             }
 
-            return secStr;
+            return result;
         }
     }
 }

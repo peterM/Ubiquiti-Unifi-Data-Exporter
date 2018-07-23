@@ -28,6 +28,6 @@ namespace MalikP.Ubiquiti.DatabaseExporter.Data.Core
 {
     public interface IDatabaseWriter
     {
-        bool Write(AbstractCommandCreator commandCreator);
+        bool Write(Abstract_CommandCreator_WriteId commandCreator);
     }
 }

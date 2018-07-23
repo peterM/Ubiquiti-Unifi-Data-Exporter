@@ -27,6 +27,7 @@ using MalikP.Ubiquiti.DatabaseExporter.Data.Core.Credentials;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Linq;
 
 namespace MalikP.Ubiquiti.DatabaseExporter.Data.Core
 {
@@ -60,6 +61,26 @@ namespace MalikP.Ubiquiti.DatabaseExporter.Data.Core
             return abstractCommandCreator?.CreateCommand(connection);
         }
 
+        protected void ExecuteNonQuery(IEnumerable<IDbCommand> commands, IDbTransaction transaction)
+        {
+            if (commands == null || !commands.Any())
+            {
+                return;
+            }
+
+            foreach (IDbCommand command in commands)
+            {
+                command.ExecuteNonQuery();
+            }
+
+            transaction.Commit();
+
+            foreach (IDbCommand command in commands)
+            {
+                command.Dispose();
+            }
+        }
+
         protected int ExecuteNonQuery(IDbCommand command)
         {
             if (command == null)
@@ -77,7 +98,7 @@ namespace MalikP.Ubiquiti.DatabaseExporter.Data.Core
         protected IEnumerable<T> ExecuteReaderWithManyResults<T>(IDbCommand command)
             where T : class, IMapable, new()
         {
-            using (command.Connection)
+            using (command?.Connection)
             using (command)
             using (var reader = command.ExecuteReader())
             {
@@ -91,7 +112,7 @@ namespace MalikP.Ubiquiti.DatabaseExporter.Data.Core
         protected T ExecuteReaderWithSingleResult<T>(IDbCommand command, T entity = null)
            where T : class, IMapable, new()
         {
-            using (command.Connection)
+            using (command?.Connection)
             using (command)
             using (var reader = command.ExecuteReader())
             {

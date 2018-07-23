@@ -40,12 +40,12 @@ namespace MalikP.Ubiquiti.DatabaseExporter.Data.Core.CommandCreators
 
         protected override string CreateCommandText()
         {
-            return $"select {TableName}.JsonDataId from {TableName} where JsonDataId = @idToCheck";
+            return $"select {TableName}.JsonDataId from {TableName} where JsonDataId IN";
         }
 
         protected override void SetupCommand(SqlCommand command)
         {
-            command.Parameters.AddWithValue("@idToCheck", IdToCheck);
+            command.CommandText = $"{CreateCommandText()}({IdToCheck})";
             command.CommandType = CommandType.Text;
         }
     }

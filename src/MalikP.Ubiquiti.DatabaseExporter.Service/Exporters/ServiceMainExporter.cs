@@ -27,6 +27,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using MalikP.Ubiquiti.DatabaseExporter.Common;
+using MalikP.Ubiquiti.DatabaseExporter.Core.Extensions;
 using MalikP.Ubiquiti.DatabaseExporter.Datasource;
 using MalikP.Ubiquiti.DatabaseExporter.Service.Decisions;
 using MalikP.Ubiquiti.DatabaseExporter.Service.Loggers;
@@ -78,6 +79,7 @@ namespace MalikP.Ubiquiti.DatabaseExporter.Service.Exporters
         {
             using (IDisposable disposableTunel = _mongoDataSource.Connect())
             {
+                string dataTimeStamp = DateTime.Now.ToString("dd_MM_yyyy_HH-mm-ss");
                 foreach (string databaseName in _mongoDataSource.GetDatabases())
                 {
                     cancellationToken.ThrowIfCancellationRequested();
@@ -92,7 +94,9 @@ namespace MalikP.Ubiquiti.DatabaseExporter.Service.Exporters
                         {
                             cancellationToken.ThrowIfCancellationRequested();
                             specificExporter.SetUnifiDataSource(_mongoDataSource);
+                            specificExporter.TryInitialize(dataTimeStamp);
                             await specificExporter.ExportAsync(databaseName, collectionName, cancellationToken);
+                            specificExporter.SetUnifiDataSource(null);
                         }
                     }
                 }

@@ -21,7 +21,7 @@ _In case you will use `false` bellow configs what describe password encryption n
 **Setting define ip address on which mongo db is listening** (_not change is needed_)<br />
 `<add key="Mongo-Connection-String" value="mongodb://127.0.0.1:27117" />`
 
-**Setting define connection string to Sql server**<br />
+**Setting define connection string to Sql server** (_Always have pooling disabled `Pooling=false;`_)<br />
 `<add key="Sql-Connection-String" value="Server=[SQL-SERVER];Database=[DATABASE-NAME];" />`
 - `[SQL-SERVER]` - IP address or FQDN of SQL server
 - `[DATABASE-NAME]` - name of database where exporter will save data
@@ -29,8 +29,11 @@ _In case you will use `false` bellow configs what describe password encryption n
 **Setting defines username|userId which will be used for SQL server connection**<br />
 `<add key="Sql-User-Id" value="" />`
 
-**Setting defines password which will be used for SQL server connection** (_have to be encrypted_) <br/>
+**Setting defines password which will be used for SQL server connection** (_have to be encrypted_) <br />
 `<add key="Sql-User-Password" value="" />`
+
+**Setting defines how many records will be handled in single transaction**<br />
+`<add key="Sql-Batch-Size" value=""/>`
 
 **Setting defines if Filesystem exporter will be used or not**<br />
 `<add key="Export-To-FS" value="true|false" />`

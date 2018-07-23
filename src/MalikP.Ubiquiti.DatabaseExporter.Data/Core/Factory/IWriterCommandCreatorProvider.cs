@@ -23,11 +23,12 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using MalikP.Ubiquiti.DatabaseExporter.Data.Core.CommandCreators;
+using System.Collections.Generic;
 
 namespace MalikP.Ubiquiti.DatabaseExporter.Data.Core.Factory
 {
     public interface IWriterCommandCreatorProvider
     {
-        Abstract_CommandCreator_WriteId GetCommandCreator(string schema, string table, string id, string data);
+        Abstract_CommandCreator_WriteId GetCommandCreator(string schema, string table, Dictionary<string, string> data);
     }
 }

@@ -1,7 +1,7 @@
 public class CommandCreator_WriteId_TOKENIZATION : CommandCreator_WriteId_Ace_stat
     {
-        public CommandCreator_WriteId_TOKENIZATION(string jsonDataId, string jsonData)
-            : base("TOKENIZATION", jsonDataId, jsonData)
+        public CommandCreator_WriteId_TOKENIZATION(Dictionary<string, string> documentDictionary)
+            : base("TOKENIZATION", documentDictionary)
         {
         }
     }

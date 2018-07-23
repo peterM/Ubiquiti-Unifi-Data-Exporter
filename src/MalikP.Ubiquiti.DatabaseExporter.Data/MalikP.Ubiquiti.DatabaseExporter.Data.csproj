@@ -233,6 +233,7 @@
     <Compile Include="Core\Credentials\CustomCredential.cs" />
     <Compile Include="Core\Credentials\EncryptedCredential.cs" />
     <Compile Include="Core\Credentials\ICustomCredential.cs" />
+    <Compile Include="Core\Factory\AbstractCommandCreatorProvider.cs" />
     <Compile Include="Core\Factory\CheckerCommandCreatorProvider.cs" />
     <Compile Include="Core\Factory\ICheckerCommandCreatorProvider.cs" />
     <Compile Include="Core\Factory\IWriterCommandCreatorProvider.cs" />
@@ -240,10 +241,11 @@
     <Compile Include="Core\IDatabaseChecker.cs" />
     <Compile Include="Core\IDatabaseWriter.cs" />
     <Compile Include="Core\IMapable.cs" />
-    <Compile Include="Core\RecordCecker.cs" />
+    <Compile Include="Core\DatabaseChecker.cs" />
     <Compile Include="Core\Mapables\AbstractMapable.cs" />
     <Compile Include="Core\Mapables\MapableBool.cs" />
-    <Compile Include="Core\RecordWriter.cs" />
+    <Compile Include="Core\Mapables\MapableString.cs" />
+    <Compile Include="Core\DatabaseWriter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Scripts\HowPrepareInstallScript.cs" />
   </ItemGroup>

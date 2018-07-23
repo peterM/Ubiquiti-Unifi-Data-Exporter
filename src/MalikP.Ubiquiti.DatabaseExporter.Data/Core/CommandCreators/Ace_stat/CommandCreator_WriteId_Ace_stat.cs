@@ -22,12 +22,14 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+using System.Collections.Generic;
+
 namespace MalikP.Ubiquiti.DatabaseExporter.Data.Core.CommandCreators.Ace_stat
 {
     public abstract class CommandCreator_WriteId_Ace_stat : Abstract_CommandCreator_WriteId
     {
-        protected CommandCreator_WriteId_Ace_stat(string tableName, string jsonDataId, string jsonData)
-            : base("ace_stat", tableName, jsonDataId, jsonData)
+        protected CommandCreator_WriteId_Ace_stat(string tableName, Dictionary<string, string> documentDictionary)
+            : base("ace_stat", tableName, documentDictionary)
         {
         }
     }

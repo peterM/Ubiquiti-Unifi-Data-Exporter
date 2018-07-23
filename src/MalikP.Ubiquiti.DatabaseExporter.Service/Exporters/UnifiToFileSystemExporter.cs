@@ -27,14 +27,14 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using MalikP.Ubiquiti.DatabaseExporter.Core.Interfaces;
 using MalikP.Ubiquiti.DatabaseExporter.Datasource;
 using MalikP.Ubiquiti.DatabaseExporter.IO;
-using MalikP.Ubiquiti.DatabaseExporter.Service.Decisions;
 using MalikP.Ubiquiti.DatabaseExporter.Service.Loggers;
 
 namespace MalikP.Ubiquiti.DatabaseExporter.Service.Exporters
 {
-    public class UnifiToFileSystemExporter : ISpecificUnifiExporter
+    public class UnifiToFileSystemExporter : ISpecificUnifiExporter, IInitializable
     {
         readonly IDirectoryWrapper _directoryWrapper;
         readonly IFileWrapper _fileWrapper;
@@ -42,6 +42,8 @@ namespace MalikP.Ubiquiti.DatabaseExporter.Service.Exporters
         readonly string _rootPath;
 
         IMongoDataSource _mongoDataSource;
+
+        string _dateTimeStamp;
 
         public UnifiToFileSystemExporter(
             IDirectoryWrapper directoryWrapperInstance,
@@ -55,16 +57,15 @@ namespace MalikP.Ubiquiti.DatabaseExporter.Service.Exporters
             _rootPath = rootPath;
 
             CheckRootPath(directoryWrapperInstance);
+            _dateTimeStamp = DateTime.Now.ToString("dd_MM_yyyy_HH-mm-ss");
         }
 
         public Task ExportAsync(string databaseName, string collectionName, CancellationToken cancellationToken)
         {
-            string dataTime = DateTime.Now.ToString("dd_MM_yyyy_HH-mm-ss");
-
             cancellationToken.ThrowIfCancellationRequested();
             var jsonDocument = _mongoDataSource.GetCollectionJsonData(databaseName, collectionName);
             byte[] collectionData = Encoding.UTF8.GetBytes(jsonDocument);
-            string path = CreateCollectionPath(_directoryWrapper, _rootPath, databaseName, dataTime);
+            string path = CreateCollectionPath(_directoryWrapper, _rootPath, databaseName, _dateTimeStamp);
             path = GetCollectionFilePath(collectionName, path);
             _fileWrapper.WriteAllBytes(path, collectionData);
             _customLogger.WriteMessage($"Collection Name {collectionName} saved to file system");
@@ -92,6 +93,16 @@ namespace MalikP.Ubiquiti.DatabaseExporter.Service.Exporters
             string pathResult = Path.Combine(pathChunks);
             directoryWrapper.CreateWhenNonExists(pathResult);
             return pathResult;
+        }
+
+        public IInitializable Initialize<T>(T initializationInstance)
+        {
+            if (typeof(T) == typeof(string))
+            {
+                _dateTimeStamp = initializationInstance as string;
+            }
+
+            return this;
         }
     }
 }
