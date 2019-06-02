@@ -1,6 +1,6 @@
 ﻿// MIT License
 //
-// Copyright (c) 2019 Peter Malik. (MalikP.)
+// Copyright (c) 2018 Peter Malik. (MalikP.)
 // 
 // File: CommandCreator_WriteId_stat.cs 
 // Company: MalikP.
