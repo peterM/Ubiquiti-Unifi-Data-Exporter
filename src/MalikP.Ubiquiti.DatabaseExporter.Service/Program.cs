@@ -1,26 +1,29 @@
-﻿// Copyright (c) 2018 Peter M.
+﻿// MIT License
+//
+// Copyright (c) 2019 Peter Malik. (MalikP.)
 // 
 // File: Program.cs 
 // Company: MalikP.
 //
-// Permission is hereby granted, free of charge, to any person obtaining
-// a copy of this software and associated documentation files (the
-// "Software"), to deal in the Software without restriction, including
-// without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to
-// permit persons to whom the Software is furnished to do so, subject to
-// the following conditions:
+// Repository: https://github.com/peterM/Ubiquiti-Unifi-Data-Exporter
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
 // 
-// The above copyright notice and this permission notice shall be
-// included in all copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
 // 
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 
 using System;
 using System.Configuration;
@@ -28,27 +31,25 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.ServiceProcess;
+using System.Threading.Tasks;
+
 using MalikP.Cryptography.Encryptors.Asymmetric;
 using MalikP.Cryptography.Identifiers;
 using MalikP.Cryptography.Obtainers;
-using MalikP.IoC.Core;
-using MalikP.IoC.Factory;
-using MalikP.IoC.Locator;
-using MalikP.IoC.Registrations;
+using MalikP.IoC;
 using MalikP.IoC.Strategies;
 using MalikP.Ubiquiti.DatabaseExporter.Common;
+using MalikP.Ubiquiti.DatabaseExporter.Core.Blacklists;
 using MalikP.Ubiquiti.DatabaseExporter.Data.Core;
+using MalikP.Ubiquiti.DatabaseExporter.Data.Core.Credentials;
 using MalikP.Ubiquiti.DatabaseExporter.Data.Core.Factory;
 using MalikP.Ubiquiti.DatabaseExporter.Datasource;
 using MalikP.Ubiquiti.DatabaseExporter.IO;
-using MalikP.Ubiquiti.DatabaseExporter.Service.Exporters;
 using MalikP.Ubiquiti.DatabaseExporter.Service.Decisions;
+using MalikP.Ubiquiti.DatabaseExporter.Service.Exporters;
+using MalikP.Ubiquiti.DatabaseExporter.Service.Loggers;
 using MalikP.Ubiquiti.DatabaseExporter.Service.Schedulers;
 using MalikP.Ubiquiti.DatabaseExporter.SSHTuneling;
-using MalikP.Ubiquiti.DatabaseExporter.Service.Loggers;
-using MalikP.Ubiquiti.DatabaseExporter.Data.Core.Credentials;
-using System.Threading.Tasks;
-using MalikP.Ubiquiti.DatabaseExporter.Core.Blacklists;
 
 namespace MalikP.Ubiquiti.DatabaseExporter.Service
 {
@@ -68,6 +69,9 @@ namespace MalikP.Ubiquiti.DatabaseExporter.Service
             if (Environment.UserInteractive)
             {
                 await service.StartServiceAsync(Enumerable.Empty<string>().ToArray());
+
+                Console.WriteLine("Press any key to exit...");
+
                 Console.ReadKey();
             }
             else
@@ -78,7 +82,7 @@ namespace MalikP.Ubiquiti.DatabaseExporter.Service
 
         private static void SetupInversionOfControl()
         {
-            _ioc = IocLocator.Container(new AdvancedContainerFactory());
+            _ioc = Locator.GetContainer();
 
             _ioc.Register<IDirectoryWrapper, DirectoryWrapper>();
 
@@ -87,14 +91,14 @@ namespace MalikP.Ubiquiti.DatabaseExporter.Service
             if (bool.Parse(ConfigurationManager.AppSettings["Use-SSH-Tunel"]))
             {
                 _ioc.Register<ISSHTunel, SSHTunel>()
-                    .RegistrationBuilder<IExtendedRegistrationBuilder>()
-                      .WithConstructorResolvingStrategy(ConstructorResolveStrategy.Complex);
+                    .Extend()
+                      .WithResolveStrategy(ConstructorResolveStrategy.Complex);
             }
 
             _ioc.Register<IMongoDataSource, MongoDatabaseDataSource>()
-                .RegistrationBuilder<IExtendedRegistrationBuilder>()
-                  .WithPrimitiveParameter<string>(ConfigurationManager.AppSettings["Mongo-Connection-String"])
-                  .WithConstructorResolvingStrategy(ConstructorResolveStrategy.Complex);
+                .Extend()
+                .WithSpecific<string>(ConfigurationManager.AppSettings["Mongo-Connection-String"])
+                  .WithResolveStrategy(ConstructorResolveStrategy.Complex);
 
             _ioc.Register<IServiceExporter, ServiceMainExporter>();
             _ioc.Register<DatabaseExporterWindowsService>();
@@ -117,55 +121,54 @@ namespace MalikP.Ubiquiti.DatabaseExporter.Service
             if (bool.Parse(ConfigurationManager.AppSettings["Export-To-FS"]))
             {
                 _ioc.Register<ISpecificUnifiExporter, UnifiToFileSystemExporter>()
-                    .RegistrationBuilder<IExtendedRegistrationBuilder>()
-                      .WithPrimitiveParameter<string>(ConfigurationManager.AppSettings["Backup-Path"]);
+                    .Extend()
+                      .WithSpecific<string>(ConfigurationManager.AppSettings["Backup-Path"]);
             }
 
             if (bool.Parse(ConfigurationManager.AppSettings["Export-To-DB"]))
             {
                 _ioc.Register<ISpecificUnifiExporter, UnifiToSqlDatabaseExporter>()
-                    .RegistrationBuilder<IExtendedRegistrationBuilder>()
-                      .WithPrimitiveParameter<int>(int.Parse(ConfigurationManager.AppSettings["Sql-Batch-Size"]));
+                    .Extend()
+                      .WithSpecific<int>(int.Parse(ConfigurationManager.AppSettings["Sql-Batch-Size"]));
             }
 
-            var connectionString = ConfigurationManager.AppSettings["Sql-Connection-String"];
+            string connectionString = ConfigurationManager.AppSettings["Sql-Connection-String"];
 
             _ioc.Register<IDatabaseChecker, DatabaseChecker>()
-                .RegistrationBuilder<IExtendedRegistrationBuilder>()
-                  .WithPrimitiveParameter<string>(connectionString);
+                .Extend()
+                  .WithSpecific<string>(connectionString);
 
             _ioc.Register<IDatabaseWriter, DatabaseWriter>()
-               .RegistrationBuilder<IExtendedRegistrationBuilder>()
-                 .WithPrimitiveParameter<string>(connectionString);
+               .Extend()
+                 .WithSpecific<string>(connectionString);
 
             if (bool.Parse(ConfigurationManager.AppSettings["Use-Encrypted-Psswords"]))
             {
                 _ioc.Register<ICertificateIdentifier, CertificateIdentifier>()
-                    .RegistrationBuilder<IExtendedRegistrationBuilder>()
-                      .WithPrimitiveParameter<string>(ConfigurationManager.AppSettings["Encryption-Certificate-Identifier"]);
+                    .Extend()
+                      .WithSpecific<string>(ConfigurationManager.AppSettings["Encryption-Certificate-Identifier"]);
 
                 _ioc.Register<CertificateObtainerSettings>()
-                    .RegistrationBuilder<IExtendedRegistrationBuilder>()
-                      .WithPrimitiveParameter<StoreName>(StoreName.My)
-                      .WithPrimitiveParameter<StoreLocation>(StoreLocation.LocalMachine)
-                      .WithPrimitiveParameter<X509FindType>(X509FindType.FindBySerialNumber)
-                      .WithConstructorResolvingStrategy(ConstructorResolveStrategy.Complex);
+                    .Extend()
+                      .WithSpecific<StoreName>(StoreName.My)
+                      .WithSpecific<StoreLocation>(StoreLocation.LocalMachine)
+                      .WithSpecific<X509FindType>(X509FindType.FindBySerialNumber)
+                      .WithResolveStrategy(ConstructorResolveStrategy.Complex);
 
                 _ioc.Register<ICertificateObtainer, CertificationStoreExactCertificateObtainer>()
-                    .RegistrationBuilder<IExtendedRegistrationBuilder>()
-                      .WithConstructorResolvingStrategy(ConstructorResolveStrategy.Complex);
+                    .Extend()
+                      .WithResolveStrategy(ConstructorResolveStrategy.Complex);
 
-                _ioc.RegisterByConstructor<RsaCertificateEncryptor>(provider => new RsaCertificateEncryptor(provider.Resolve<ICertificateObtainer>(), RSAEncryptionPadding.OaepSHA1));
+                _ioc.Register<RsaCertificateEncryptor>(provider => new RsaCertificateEncryptor(provider.Resolve<ICertificateObtainer>(), RSAEncryptionPadding.OaepSHA1));
 
-
-                _ioc.RegisterByConstructor<ICustomCredential>(provider => new EncryptedCredential(ConfigurationManager.AppSettings["Sql-User-Id"],
-                                                                                                  ConfigurationManager.AppSettings["Sql-User-Password"],
-                                                                                                  provider.Resolve<RsaCertificateEncryptor>()));
+                _ioc.Register<ICustomCredential>(provider => new EncryptedCredential(ConfigurationManager.AppSettings["Sql-User-Id"],
+                                                                                     ConfigurationManager.AppSettings["Sql-User-Password"],
+                                                                                     provider.Resolve<RsaCertificateEncryptor>()));
             }
             else
             {
-                _ioc.RegisterByConstructor<ICustomCredential>(provider => new CustomCredential(ConfigurationManager.AppSettings["Sql-User-Id"],
-                                                                                               ConfigurationManager.AppSettings["Sql-User-Password"]));
+                _ioc.Register<ICustomCredential>(provider => new CustomCredential(ConfigurationManager.AppSettings["Sql-User-Id"],
+                                                                                  ConfigurationManager.AppSettings["Sql-User-Password"]));
             }
 
             _ioc.Register<ICheckerCommandCreatorProvider, CheckerCommandCreatorProvider>();
@@ -173,8 +176,8 @@ namespace MalikP.Ubiquiti.DatabaseExporter.Service
 
             _ioc.Register<IBlacklistItemParser, BlacklistItemParser>();
             _ioc.Register<IBlacklist, SimpleTableBlacklist>()
-                .RegistrationBuilder<IExtendedRegistrationBuilder>()
-                  .WithPrimitiveParameter<string>(ConfigurationManager.AppSettings["Blacklisted-Table-Names"]);
+                .Extend()
+                  .WithSpecific<string>(ConfigurationManager.AppSettings["Blacklisted-Table-Names"]);
         }
     }
 }

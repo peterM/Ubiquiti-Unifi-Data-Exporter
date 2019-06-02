@@ -1,26 +1,29 @@
-﻿// Copyright (c) 2018 Peter M.
+﻿// MIT License
+//
+// Copyright (c) 2019 Peter Malik. (MalikP.)
 // 
 // File: UnifiToSqlDatabaseExporter.cs 
 // Company: MalikP.
 //
-// Permission is hereby granted, free of charge, to any person obtaining
-// a copy of this software and associated documentation files (the
-// "Software"), to deal in the Software without restriction, including
-// without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to
-// permit persons to whom the Software is furnished to do so, subject to
-// the following conditions:
+// Repository: https://github.com/peterM/Ubiquiti-Unifi-Data-Exporter
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
 // 
-// The above copyright notice and this permission notice shall be
-// included in all copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
 // 
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 
 using System;
 using System.Collections.Generic;
@@ -32,7 +35,6 @@ using System.Threading.Tasks;
 using MalikP.Ubiquiti.DatabaseExporter.Core.Blacklists;
 using MalikP.Ubiquiti.DatabaseExporter.Data.Core;
 using MalikP.Ubiquiti.DatabaseExporter.Data.Core.Factory;
-using MalikP.Ubiquiti.DatabaseExporter.Datasource;
 using MalikP.Ubiquiti.DatabaseExporter.Service.Loggers;
 using Newtonsoft.Json.Linq;
 
@@ -47,8 +49,6 @@ namespace MalikP.Ubiquiti.DatabaseExporter.Service.Exporters
         readonly IDatabaseChecker _checker;
         readonly IDatabaseWriter _writer;
         readonly int _batchSize;
-
-        IMongoDataSource _mongoDataSource;
 
         public UnifiToSqlDatabaseExporter(
             IBlacklist blacklist,
@@ -68,21 +68,16 @@ namespace MalikP.Ubiquiti.DatabaseExporter.Service.Exporters
             _blacklist = blacklist;
         }
 
-        public void SetUnifiDataSource(IMongoDataSource mongoDataSource)
+        public Task ExportAsync(string databaseName, string collectionName, IEnumerable<String> jsonDocuments, CancellationToken cancellationToken)
         {
-            _mongoDataSource = mongoDataSource;
-        }
-
-        public Task ExportAsync(string databaseName, string collectionName, CancellationToken cancellationToken)
-        {
-            if (!_blacklist.IsBlacklisted($"{databaseName}.{collectionName}"))
+            if (!_blacklist.IsBlacklisted($"{databaseName}.{collectionName}") && jsonDocuments.Any())
             {
-                var documents = _mongoDataSource.GetCollectionJsonDocuments(databaseName, collectionName).ToList();
-                var totalCount = documents.Count;
+                var documents = jsonDocuments.ToList();
+                var totalCount = documents.Count();
 
                 int logCounter1 = 0;
                 int counter = 0;
-                while ((counter = documents.Count) > 0)
+                while ((counter = documents.Count()) > 0)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
                     var documentsToProcess = documents.Take(_batchSize).ToList();
