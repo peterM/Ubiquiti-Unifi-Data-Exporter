@@ -29,6 +29,6 @@ namespace MalikP.Ubiquiti.DatabaseExporter.Service.Exporters
 {
     public interface IServiceExporter
     {
-        Task ExportAsync(CancellationToken token);
+        Task ExportAsync(CancellationToken cancellationToken);
     }
 }

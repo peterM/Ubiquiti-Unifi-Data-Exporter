@@ -31,8 +31,7 @@ namespace MalikP.Ubiquiti.DatabaseExporter.Datasource
     {
         IEnumerable<string> GetDatabases();
         IEnumerable<String> GetCollections(string database);
-        string GetCollectionJsonData(string database, string collectionName);
-        IEnumerable<string> GetCollectionJsonDocuments(string database, string collectionName);
+        IEnumerable<string> GetJsonDocuments(string database, string collectionName);
         IDisposable Connect();
     }
 }

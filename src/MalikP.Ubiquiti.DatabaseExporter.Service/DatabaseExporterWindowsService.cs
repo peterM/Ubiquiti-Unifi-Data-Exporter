@@ -70,12 +70,8 @@ namespace MalikP.Ubiquiti.DatabaseExporter.Service
             }
             catch (Exception)
             {
+                _tokenSource?.Dispose();
                 Debug.Write("Waiting");
-            }
-
-            while (_exporterTask.Status != TaskStatus.Canceled)
-            {
-                Thread.Sleep(1000);
             }
         }
     }

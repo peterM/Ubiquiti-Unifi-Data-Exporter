@@ -41,7 +41,7 @@ namespace MalikP.Ubiquiti.DatabaseExporter.Data.Core.Factory
             var files = Directory.GetFiles(location, "*.dll", SearchOption.AllDirectories)
                                  .Concat(Directory.GetFiles(location, "*.exe", SearchOption.AllDirectories));
 
-            foreach (var file in files)
+            foreach (var file in files.Where(d => Path.GetFileName(d).StartsWith("malikp", StringComparison.InvariantCultureIgnoreCase)))
             {
                 var foundTypes = Assembly.LoadFrom(file)
                                          .GetTypes()

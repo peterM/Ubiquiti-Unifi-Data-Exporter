@@ -22,20 +22,18 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-using MalikP.Cryptography.Encryptors.Asymmetric;
-using MalikP.Cryptography.Identifiers;
-using MalikP.Cryptography.Obtainers;
-using MalikP.IoC.Core;
-using MalikP.IoC.Factory;
-using MalikP.IoC.Locator;
-using MalikP.IoC.Registrations;
-using MalikP.IoC.Strategies;
 using System;
 using System.Configuration;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Windows.Forms;
+
+using MalikP.Cryptography.Encryptors.Asymmetric;
+using MalikP.Cryptography.Identifiers;
+using MalikP.Cryptography.Obtainers;
+using MalikP.IoC;
+using MalikP.IoC.Strategies;
 
 namespace MalikP.Ubiquiti.DatabaseExporter.EncryptPasswordTool
 {
@@ -49,37 +47,55 @@ namespace MalikP.Ubiquiti.DatabaseExporter.EncryptPasswordTool
             SetupInversionOfControl();
             var encryptor = _ioc.Resolve<RsaCertificateEncryptor>();
 
-            var encrypted = encryptor.Encrypt(args.First());
+            var arg = args.FirstOrDefault();
+            if (arg == null)
+            {
+                return;
+            }
+
+            var encrypted = encryptor.Encrypt(arg);
             Clipboard.SetText(encrypted);
 
             Console.WriteLine(string.Empty);
             Console.WriteLine(string.Empty);
+            Console.WriteLine(string.Empty);
+            Console.WriteLine(string.Empty);
+
             Console.ForegroundColor = ConsoleColor.DarkCyan;
             Console.WriteLine(encrypted);
+
+            Console.WriteLine(string.Empty);
+            Console.WriteLine(string.Empty);
+            Console.WriteLine(string.Empty);
+            Console.WriteLine(string.Empty);
+
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("Code copied to clipboard !!!");
             Console.ResetColor();
+
             Console.WriteLine(string.Empty);
             Console.WriteLine(string.Empty);
         }
 
         private static void SetupInversionOfControl()
         {
-            _ioc = IocLocator.Container(new AdvancedContainerFactory());
+            _ioc = Locator.GetContainer();
             _ioc.Register<ICertificateIdentifier, CertificateIdentifier>()
-              .RegistrationBuilder<IExtendedRegistrationBuilder>()
-              .WithPrimitiveParameter<string>(ConfigurationManager.AppSettings["Encryption-Certificate-Identifier"]);
+              .Extend()
+              .WithSpecific<string>(ConfigurationManager.AppSettings["Encryption-Certificate-Identifier"]);
 
             _ioc.Register<CertificateObtainerSettings>()
-                .RegistrationBuilder<IExtendedRegistrationBuilder>()
-                .WithPrimitiveParameter<StoreName>(StoreName.My)
-                .WithPrimitiveParameter<StoreLocation>(StoreLocation.LocalMachine)
-                .WithPrimitiveParameter<X509FindType>(X509FindType.FindBySerialNumber)
-                .WithConstructorResolvingStrategy(ConstructorResolveStrategy.Complex);
+                .Extend()
+                .WithSpecific<StoreName>(StoreName.My)
+                .WithSpecific<StoreLocation>(StoreLocation.LocalMachine)
+                .WithSpecific<X509FindType>(X509FindType.FindBySerialNumber)
+                .WithResolveStrategy(ConstructorResolveStrategy.Complex);
 
             _ioc.Register<ICertificateObtainer, CertificationStoreExactCertificateObtainer>()
-                .RegistrationBuilder<IExtendedRegistrationBuilder>()
-                .WithConstructorResolvingStrategy(ConstructorResolveStrategy.Complex);
+                .Extend()
+                .WithResolveStrategy(ConstructorResolveStrategy.Complex);
 
-            _ioc.RegisterByConstructor<RsaCertificateEncryptor>(provider => new RsaCertificateEncryptor(provider.Resolve<ICertificateObtainer>(), RSAEncryptionPadding.OaepSHA1));
+            _ioc.Register<RsaCertificateEncryptor>(provider => new RsaCertificateEncryptor(provider.Resolve<ICertificateObtainer>(), RSAEncryptionPadding.OaepSHA1));
         }
     }
 }

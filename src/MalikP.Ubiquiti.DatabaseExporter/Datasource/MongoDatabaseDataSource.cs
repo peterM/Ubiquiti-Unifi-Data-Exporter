@@ -24,14 +24,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+
+using MalikP.Ubiquiti.DatabaseExporter.SSHTuneling;
+
 using MongoDB.Bson;
 using MongoDB.Bson.IO;
 using MongoDB.Driver;
-using MalikP.Ubiquiti.DatabaseExporter.SSHTuneling;
-using System.IO;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace MalikP.Ubiquiti.DatabaseExporter.Datasource
 {
@@ -39,9 +39,7 @@ namespace MalikP.Ubiquiti.DatabaseExporter.Datasource
     {
         private readonly string _connectionString;
         private readonly ISSHTunel _tunel;
-
         private IMongoClient _client;
-        public ISSHTunel SSHTunelInstanc { get; private set; }
 
         public MongoDatabaseDataSource(string connectionString)
             : this(connectionString, null)
@@ -57,9 +55,9 @@ namespace MalikP.Ubiquiti.DatabaseExporter.Datasource
         public IDisposable Connect()
         {
             IDisposable openedTunel = _tunel?.OpenTunel();
-            _client = new MongoClient(_connectionString);
+            _client = _client ?? new MongoClient(_connectionString);
 
-            return openedTunel != null ? openedTunel : new MemoryStream();
+            return openedTunel ?? new MemoryStream();
         }
 
         public IEnumerable<string> GetDatabases()
@@ -84,12 +82,7 @@ namespace MalikP.Ubiquiti.DatabaseExporter.Datasource
             return _client.GetDatabase(database);
         }
 
-        public IEnumerable<string> GetCollectionJsonDocuments(string database, string collectionName)
-        {
-            return GetJsonDocuments(database, collectionName);
-        }
-
-        private IEnumerable<string> GetJsonDocuments(string database, string collectionName)
+        public IEnumerable<string> GetJsonDocuments(string database, string collectionName)
         {
             IMongoDatabase databaseObject = GetDatabase(database);
             IMongoCollection<BsonDocument> collectionObject = GetCollection(collectionName, databaseObject);
@@ -97,25 +90,10 @@ namespace MalikP.Ubiquiti.DatabaseExporter.Datasource
             IAsyncCursor<BsonDocument> cursor = collectionObject.Find(new BsonDocument())
                                                                 .ToCursor();
 
-            var data = cursor.ToEnumerable().Select(d => d.ToJson(new JsonWriterSettings { OutputMode = JsonOutputMode.Strict })).ToList();
+            var data = cursor.ToEnumerable()
+                .Select(d => d.ToJson(new JsonWriterSettings { OutputMode = JsonOutputMode.Strict }))
+                .ToList();
             return data;
-        }
-
-        public string GetCollectionJsonData(string database, string collectionName)
-        {
-            var jsonDocuments = GetJsonDocuments(database, collectionName);
-
-            return MergeDocumentsTOCollectionJson(jsonDocuments, collectionName);
-        }
-
-        private string MergeDocumentsTOCollectionJson(IEnumerable<string> jsonDocuments, string collectionName)
-        {
-            byte[] result = default(byte[]);
-
-            Dictionary<string, IEnumerable<JObject>> documents = new Dictionary<string, IEnumerable<JObject>>();
-            documents.Add(collectionName, jsonDocuments.Select(JObject.Parse));
-
-            return Newtonsoft.Json.JsonConvert.SerializeObject(documents, Formatting.None);
         }
 
         private IMongoCollection<BsonDocument> GetCollection(string collectionName, IMongoDatabase databaseObject)

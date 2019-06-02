@@ -22,15 +22,14 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using MalikP.Ubiquiti.DatabaseExporter.Datasource;
 
 namespace MalikP.Ubiquiti.DatabaseExporter.Service.Exporters
 {
     public interface ISpecificUnifiExporter
     {
-        void SetUnifiDataSource(IMongoDataSource mongoDataSource);
-        Task ExportAsync(string databaseName, string collectionName, CancellationToken cancellationToken);
+        Task ExportAsync(string databaseName, string collectionName, IEnumerable<string> jsonDocuments, CancellationToken cancellationToken);
     }
 }

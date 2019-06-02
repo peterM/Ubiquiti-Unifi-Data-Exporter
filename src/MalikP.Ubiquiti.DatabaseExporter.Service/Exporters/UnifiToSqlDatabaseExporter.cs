@@ -32,7 +32,6 @@ using System.Threading.Tasks;
 using MalikP.Ubiquiti.DatabaseExporter.Core.Blacklists;
 using MalikP.Ubiquiti.DatabaseExporter.Data.Core;
 using MalikP.Ubiquiti.DatabaseExporter.Data.Core.Factory;
-using MalikP.Ubiquiti.DatabaseExporter.Datasource;
 using MalikP.Ubiquiti.DatabaseExporter.Service.Loggers;
 using Newtonsoft.Json.Linq;
 
@@ -47,8 +46,6 @@ namespace MalikP.Ubiquiti.DatabaseExporter.Service.Exporters
         readonly IDatabaseChecker _checker;
         readonly IDatabaseWriter _writer;
         readonly int _batchSize;
-
-        IMongoDataSource _mongoDataSource;
 
         public UnifiToSqlDatabaseExporter(
             IBlacklist blacklist,
@@ -68,21 +65,16 @@ namespace MalikP.Ubiquiti.DatabaseExporter.Service.Exporters
             _blacklist = blacklist;
         }
 
-        public void SetUnifiDataSource(IMongoDataSource mongoDataSource)
+        public Task ExportAsync(string databaseName, string collectionName, IEnumerable<String> jsonDocuments, CancellationToken cancellationToken)
         {
-            _mongoDataSource = mongoDataSource;
-        }
-
-        public Task ExportAsync(string databaseName, string collectionName, CancellationToken cancellationToken)
-        {
-            if (!_blacklist.IsBlacklisted($"{databaseName}.{collectionName}"))
+            if (!_blacklist.IsBlacklisted($"{databaseName}.{collectionName}") && jsonDocuments.Any())
             {
-                var documents = _mongoDataSource.GetCollectionJsonDocuments(databaseName, collectionName).ToList();
-                var totalCount = documents.Count;
+                var documents = jsonDocuments.ToList();
+                var totalCount = documents.Count();
 
                 int logCounter1 = 0;
                 int counter = 0;
-                while ((counter = documents.Count) > 0)
+                while ((counter = documents.Count()) > 0)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
                     var documentsToProcess = documents.Take(_batchSize).ToList();

@@ -23,16 +23,19 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MalikP.Ubiquiti.DatabaseExporter.Core.Blacklists;
 using MalikP.Ubiquiti.DatabaseExporter.Core.Interfaces;
-using MalikP.Ubiquiti.DatabaseExporter.Datasource;
 using MalikP.Ubiquiti.DatabaseExporter.IO;
 using MalikP.Ubiquiti.DatabaseExporter.Service.Loggers;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace MalikP.Ubiquiti.DatabaseExporter.Service.Exporters
 {
@@ -43,8 +46,6 @@ namespace MalikP.Ubiquiti.DatabaseExporter.Service.Exporters
         readonly IFileWrapper _fileWrapper;
         readonly ICustomLogger _customLogger;
         readonly string _rootPath;
-
-        IMongoDataSource _mongoDataSource;
 
         string _dateTimeStamp;
 
@@ -65,12 +66,12 @@ namespace MalikP.Ubiquiti.DatabaseExporter.Service.Exporters
             _blacklist = blacklist;
         }
 
-        public Task ExportAsync(string databaseName, string collectionName, CancellationToken cancellationToken)
+        public Task ExportAsync(string databaseName, string collectionName, IEnumerable<String> jsonDocuments, CancellationToken cancellationToken)
         {
             if (!_blacklist.IsBlacklisted($"{databaseName}.{collectionName}"))
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                var jsonDocument = _mongoDataSource.GetCollectionJsonData(databaseName, collectionName);
+                var jsonDocument = MergeDocumentsToCollectionJson(jsonDocuments, collectionName);
                 byte[] collectionData = Encoding.UTF8.GetBytes(jsonDocument);
                 string path = CreateCollectionPath(_directoryWrapper, _rootPath, databaseName, _dateTimeStamp);
                 path = GetCollectionFilePath(collectionName, path);
@@ -85,9 +86,14 @@ namespace MalikP.Ubiquiti.DatabaseExporter.Service.Exporters
             return Task.CompletedTask;
         }
 
-        public void SetUnifiDataSource(IMongoDataSource mongoDataSource)
+        private string MergeDocumentsToCollectionJson(IEnumerable<string> jsonDocuments, string collectionName)
         {
-            _mongoDataSource = mongoDataSource;
+            byte[] result = default(byte[]);
+
+            Dictionary<string, IEnumerable<JObject>> documents = new Dictionary<string, IEnumerable<JObject>>();
+            documents.Add(collectionName, jsonDocuments.Select(JObject.Parse));
+
+            return JsonConvert.SerializeObject(documents, Formatting.None);
         }
 
         private void CheckRootPath(IDirectoryWrapper directoryWrapper)

@@ -24,8 +24,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+
 using MalikP.Ubiquiti.DatabaseExporter.Common;
 using MalikP.Ubiquiti.DatabaseExporter.Core.Extensions;
 using MalikP.Ubiquiti.DatabaseExporter.Datasource;
@@ -42,7 +44,7 @@ namespace MalikP.Ubiquiti.DatabaseExporter.Service.Exporters
         private readonly IContinueDecision _continueDecision;
         private readonly IMongoDataSource _mongoDataSource;
         private readonly ICustomLogger _customLogger;
-        private readonly IEnumerable<ISpecificUnifiExporter> _specificExporters;
+        private readonly IReadOnlyCollection<ISpecificUnifiExporter> _specificExporters;
 
         public ServiceMainExporter(
             IExportScheduler exportScheduler,
@@ -57,21 +59,34 @@ namespace MalikP.Ubiquiti.DatabaseExporter.Service.Exporters
             _continueDecision = continueDecision;
             _mongoDataSource = mongoDataSource;
             _customLogger = customLogger;
-            _specificExporters = specificExporters;
+            _specificExporters = specificExporters.ToList();
+
+            WriteLog();
         }
 
-        public async Task ExportAsync(CancellationToken token)
+        private void WriteLog()
         {
-            while (_continueDecision.CanContinue)
+            _customLogger.WriteMessage($"There are [{_specificExporters.Count}] resolved exporters.");
+
+            foreach (ISpecificUnifiExporter exporter in _specificExporters)
+            {
+                _customLogger.WriteMessage($"\tThere is [{exporter.GetType().Name}] exporter resolved.");
+            }
+
+            _customLogger.WriteMessage("\n");
+        }
+
+        public async Task ExportAsync(CancellationToken cancellationToken)
+        {
+            while (_continueDecision.CanContinue && !cancellationToken.IsCancellationRequested)
             {
                 if (_exportScheduler.IsSignal())
                 {
-                    await DoAsync(token);
-                    await Task.Delay(5000);
+                    await DoAsync(cancellationToken).ConfigureAwait(false);
+                    await Task.Delay(5000).ConfigureAwait(false);
                 }
 
-                await Task.Delay(1000);
-                token.ThrowIfCancellationRequested();
+                await Task.Delay(1000).ConfigureAwait(false);
             }
         }
 
@@ -90,13 +105,13 @@ namespace MalikP.Ubiquiti.DatabaseExporter.Service.Exporters
                         _customLogger.WriteMessage($"Current collection name: {collectionName}");
                         cancellationToken.ThrowIfCancellationRequested();
 
+                        IEnumerable<string> documents = _mongoDataSource.GetJsonDocuments(databaseName, collectionName);
                         foreach (ISpecificUnifiExporter specificExporter in _specificExporters)
                         {
                             cancellationToken.ThrowIfCancellationRequested();
-                            specificExporter.SetUnifiDataSource(_mongoDataSource);
                             specificExporter.TryInitialize(dataTimeStamp);
-                            await specificExporter.ExportAsync(databaseName, collectionName, cancellationToken);
-                            specificExporter.SetUnifiDataSource(null);
+                            await specificExporter.ExportAsync(databaseName, collectionName, documents, cancellationToken)
+                                .ConfigureAwait(false);
                         }
                     }
                 }
