@@ -85,4 +85,10 @@ _Your password should be also automatically copied into clipboard._
 If you want to use SQL Server Database to store your data you also have to create database and prepare schema of that database.
 1. create empty SQL database
 2. execute script located in project `~\src\MalikP.Ubiquiti.DatabaseExporter.Data\Scripts\InstallScript.sql`
+2.1. if you already have DB and you have CloudKey Gen2 or UDM-Pro install sql script `~\src\MalikP.Ubiquiti.DatabaseExporter.Data\Scripts\Update_1_Gen2.sql`
 3. done
+
+
+### Support for CloudKey Gen2 & UDM-Pro
+If you already have DB install just sql script `~\src\MalikP.Ubiquiti.DatabaseExporter.Data\Scripts\Update_1_Gen2.sql`
+otherwise install updated sql script `~\src\MalikP.Ubiquiti.DatabaseExporter.Data\Scripts\InstallScript.sql`.
