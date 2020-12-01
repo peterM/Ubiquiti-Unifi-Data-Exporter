@@ -117,6 +117,9 @@
     <Compile Include="Core\AbstractDatabaseExecutor.cs" />
     <Compile Include="Core\CommandCreators\Abstract_CommandCreator_WriteId.cs" />
     <Compile Include="Core\CommandCreators\Abstract_CommandCreator_CheckId.cs" />
+    <Compile Include="Core\CommandCreators\Ace\CommandCreator_CheckId_featuremigration.cs" />
+    <Compile Include="Core\CommandCreators\Ace\CommandCreator_CheckId_ipsalert.cs" />
+    <Compile Include="Core\CommandCreators\Ace\CommandCreator_CheckId_storeddpistats.cs" />
     <Compile Include="Core\CommandCreators\Ace\CommandCreator_WriteId_account.cs" />
     <Compile Include="Core\CommandCreators\Ace\CommandCreator_WriteId_Ace.cs" />
     <Compile Include="Core\CommandCreators\Ace\CommandCreator_CheckId_account.cs" />
@@ -175,6 +178,7 @@
     <Compile Include="Core\CommandCreators\Ace\CommandCreator_WriteId_dpigroup.cs" />
     <Compile Include="Core\CommandCreators\Ace\CommandCreator_WriteId_dynamicdns.cs" />
     <Compile Include="Core\CommandCreators\Ace\CommandCreator_WriteId_event.cs" />
+    <Compile Include="Core\CommandCreators\Ace\CommandCreator_WriteId_featuremigration.cs" />
     <Compile Include="Core\CommandCreators\Ace\CommandCreator_WriteId_firewallgroup.cs" />
     <Compile Include="Core\CommandCreators\Ace\CommandCreator_WriteId_firewallrule.cs" />
     <Compile Include="Core\CommandCreators\Ace\CommandCreator_WriteId_guest.cs" />
@@ -183,6 +187,7 @@
     <Compile Include="Core\CommandCreators\Ace\CommandCreator_WriteId_hotspot2conf.cs" />
     <Compile Include="Core\CommandCreators\Ace\CommandCreator_WriteId_hotspotop.cs" />
     <Compile Include="Core\CommandCreators\Ace\CommandCreator_WriteId_hotspotpackage.cs" />
+    <Compile Include="Core\CommandCreators\Ace\CommandCreator_WriteId_ipsalert.cs" />
     <Compile Include="Core\CommandCreators\Ace\CommandCreator_WriteId_map.cs" />
     <Compile Include="Core\CommandCreators\Ace\CommandCreator_WriteId_mediafile.cs" />
     <Compile Include="Core\CommandCreators\Ace\CommandCreator_WriteId_networkconf.cs" />
@@ -199,6 +204,7 @@
     <Compile Include="Core\CommandCreators\Ace\CommandCreator_WriteId_setting.cs" />
     <Compile Include="Core\CommandCreators\Ace\CommandCreator_WriteId_site.cs" />
     <Compile Include="Core\CommandCreators\Ace\CommandCreator_WriteId_stat.cs" />
+    <Compile Include="Core\CommandCreators\Ace\CommandCreator_WriteId_storeddpistats.cs" />
     <Compile Include="Core\CommandCreators\Ace\CommandCreator_WriteId_tag.cs" />
     <Compile Include="Core\CommandCreators\Ace\CommandCreator_WriteId_task.cs" />
     <Compile Include="Core\CommandCreators\Ace\CommandCreator_WriteId_user.cs" />
@@ -267,6 +273,7 @@
     <Content Include="Scripts\template_switch.txt" />
     <Content Include="Scripts\template_write-class.txt" />
     <Content Include="Scripts\template_write_switch.txt" />
+    <Content Include="Scripts\Update_1_Gen2.sql" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MalikP.Ubiquiti.DatabaseExporter.Core\MalikP.Ubiquiti.DatabaseExporter.Core.csproj">
